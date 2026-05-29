@@ -1,6 +1,6 @@
-# 🏠 Veille Immo 95
+# 🏠 Veille Immo
 
-> Surveillance automatique du marché immobilier dans le Val-d'Oise — alertes instantanées par Telegram et email, dashboard en temps réel.
+> Surveillance automatique du marché immobilier — alertes instantanées par Telegram et email, dashboard en temps réel.
 
 Scrape **PAP**, **BienIci**, **LeBonCoin** et **SeLoger** toutes les 20 minutes. Chaque nouvelle annonce est scorée, dédupliquée, et envoyée avant que tu aies eu le temps d'ouvrir ton navigateur.
 
@@ -13,9 +13,7 @@ Scrape **PAP**, **BienIci**, **LeBonCoin** et **SeLoger** toutes les 20 minutes.
 | Fonctionnalité | Détail |
 |---|---|
 | **Sources** | PAP · BienIci · LeBonCoin · SeLoger |
-| **Zone** | Ermont, Eaubonne, Enghien, Sannois, Deuil, Soisy… (95) |
-| **Budget** | ≤ 470 000 € |
-| **Critères** | ≥ 4 chambres, maison uniquement |
+| **Type** | Maison uniquement |
 | **Scan** | Toutes les 20 minutes |
 | **Alertes** | Telegram (instantané) + Email (Gmail) |
 | **Dashboard** | Dark UI temps réel sur `http://localhost:3000` |
@@ -33,7 +31,30 @@ cd veille-immo
 bash setup.sh
 ```
 
-### 2. Configurer les alertes
+### 2. Configurer
+
+Édite `config.py` avec tes critères :
+
+```python
+SEARCH = {
+    "budget_max": 470_000,       # Budget maximum
+    "chambres_min": 4,           # Nombre de chambres minimum
+    "communes": [                # Communes à surveiller
+        "Ville1", "Ville2", ...
+    ],
+    "mots_exclus": [             # Annonces ignorées si ces mots apparaissent
+        "parking", "garage seul", "terrain seul",
+    ],
+}
+
+SCAN_INTERVAL_MINUTES = 20
+
+COMMUNES_PRIORITAIRES = {        # Bonus score communes favorites
+    "Ville1", "Ville2"
+}
+```
+
+### 3. Configurer les alertes
 
 ```bash
 cp .env.example .env
@@ -52,7 +73,7 @@ EMAIL_PASSWORD=xxxx xxxx xxxx xxxx
 EMAIL_RECIPIENT=toi@gmail.com
 ```
 
-### 3. Lancer
+### 4. Lancer
 
 ```bash
 source .venv/bin/activate && python run.py
@@ -119,42 +140,29 @@ Chaque annonce reçoit un score entre 0 et 100 :
 | Prix ≤ budget − 50 000 € | +30 |
 | Surface ≥ 120 m² | +20 |
 | ≥ 5 chambres | +20 |
-| Commune prioritaire (Ermont, Eaubonne, Enghien) | +30 |
+| Commune prioritaire | +30 |
 
-Les annonces hors budget (> 470 000 €) sont ignorées (score = 0).
+Les annonces hors budget sont ignorées (score = 0).
 
 ---
 
-## Adapter à ta recherche
+## Ajouter des communes PAP
 
-Tout se configure dans `config.py` :
+Récupère le geo ID d'une commune via l'API PAP :
 
-```python
-SEARCH = {
-    "budget_max": 470_000,       # Budget maximum
-    "chambres_min": 4,           # Nombre de chambres minimum
-    "communes": [                # Communes surveillées
-        "Ermont", "Eaubonne", "Enghien-les-Bains", ...
-    ],
-    "mots_exclus": [             # Annonces ignorées si ces mots apparaissent
-        "parking", "garage seul", "terrain seul",
-    ],
-}
-
-SCAN_INTERVAL_MINUTES = 20       # Fréquence de scan
-
-COMMUNES_PRIORITAIRES = {        # Bonus score commune
-    "Ermont", "Eaubonne", "Enghien-les-Bains"
-}
-```
-
-Pour changer les communes de PAP, récupère les geo IDs via :
 ```bash
 curl "https://www.pap.fr/json/ac-geo?q=NomCommune"
-# → [{"id": 43399, "name": "Ermont (95120)"}]
+# → [{"id": 12345, "name": "NomCommune (75000)"}]
 ```
 
-Puis ajoute l'entrée dans `scrapers/pap.py` → `COMMUNES_PAP`.
+Puis ajoute l'entrée dans `scrapers/pap.py` → dictionnaire `COMMUNES_PAP` :
+
+```python
+COMMUNES_PAP = {
+    "nom-commune-75000": 12345,
+    ...
+}
+```
 
 ---
 
@@ -168,9 +176,9 @@ Puis ajoute l'entrée dans `scrapers/pap.py` → `COMMUNES_PAP`.
 Chaque alerte ressemble à :
 ```
 🏠 Nouvelle annonce · Score 90
-📍 Eaubonne (95600)
-💰 380 000 € — 4 310 €/m²
-🏡 88 m² · 4 ch.
+📍 Ville (75000)
+💰 350 000 € — 3 500 €/m²
+🏡 100 m² · 4 ch.
 Voir sur PAP →
 ```
 
@@ -223,7 +231,7 @@ Pour tester le dashboard sans attendre le premier scan :
 source .venv/bin/activate && python seed.py
 ```
 
-Injecte 6 annonces fictives avec de vraies photos pour vérifier que l'interface fonctionne.
+Injecte des annonces fictives avec de vraies photos pour vérifier que l'interface fonctionne.
 
 ---
 
