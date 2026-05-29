@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Veille Immo · Val-d'Oise 95</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+
+  <style>
+    /* ═══════════════════════════════════════
+       RESET & TOKENS
+    ═══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #07070a;
+      --bg2:       #0c0c12;
+      --surf:      rgba(255,255,255,0.04);
+      --surf2:     rgba(255,255,255,0.075);
+      --surf3:     rgba(255,255,255,0.11);
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(255,255,255,0.12);
+      --text:      #eef0ff;
+      --text2:     #8890a8;
+      --text3:     #40485a;
+      --accent:    #7c7ff8;
+      --accent2:   #a78bfa;
+      --glow:      rgba(124,127,248,0.18);
+      --radius:    16px;
+      --sidebar:   248px;
+
+      --pap:     #c084fc;
+      --bienici: #fb923c;
+      --lbc:     #f87171;
+      --seloger: #38bdf8;
+
+      --s-green: #34d399;
+      --s-blue:  #7c7ff8;
+      --s-amber: #fbbf24;
+      --s-grey:  #475569;
+    }
+
+    html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    body { display: grid; grid-template-rows: 58px 1fr; overflow: hidden; position: relative; }
+
+    /* Ambient background glows */
+    body::before, body::after {
+      content: ''; position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+    }
+    body::before {
+      width: 700px; height: 700px; top: -200px; right: -150px;
+      background: radial-gradient(circle, rgba(99,102,241,0.055) 0%, transparent 70%);
+    }
+    body::after {
+      width: 600px; height: 600px; bottom: -200px; left: -100px;
+      background: radial-gradient(circle, rgba(167,139,250,0.04) 0%, transparent 70%);
+    }
+
+    /* ═══════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════ */
+    header {
+      position: relative; z-index: 100;
+      display: flex; align-items: center; gap: 18px; padding: 0 22px;
+      background: rgba(7,7,10,0.88); backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-size: 0.95rem; font-weight: 900; letter-spacing: -0.03em; white-space: nowrap; flex-shrink: 0;
+      background: linear-gradient(130deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .header-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
+
+    .stat-pills { display: flex; gap: 6px; overflow: hidden; flex: 1; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px; border-radius: 20px;
+      background: var(--surf); border: 1px solid var(--border);
+      font-size: 0.72rem; white-space: nowrap; transition: border-color 0.2s;
+    }
+    .pill:hover { border-color: var(--border2); }
+    .pill b { color: var(--text); font-weight: 700; }
+    .pill span { color: var(--text2); }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+    .live { display: flex; align-items: center; gap: 7px; margin-left: auto; flex-shrink: 0; }
+    .live-ring {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--s-green);
+      box-shadow: 0 0 0 0 rgba(52,211,153,0.4);
+      animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+    .live-txt { font-size: 0.72rem; font-weight: 600; color: var(--s-green); }
+    @keyframes ping {
+      0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(52,211,153,0); }
+      100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
+    }
+
+    /* ═══════════════════════════════════════
+       SHELL
+    ═══════════════════════════════════════ */
+    .shell { display: grid; grid-template-columns: var(--sidebar) 1fr; overflow: hidden; position: relative; z-index: 1; }
+
+    /* ═══════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════ */
+    aside {
+      background: var(--bg2); border-right: 1px solid var(--border);
+      padding: 18px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 22px;
+    }
+    aside::-webkit-scrollbar { width: 3px; }
+    aside::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 2px; }
+
+    .section-title {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text3); margin-bottom: 9px;
+    }
+
+    /* Source pills 2×2 */
+    .src-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .src-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 10px 6px; border-radius: 10px;
+      background: var(--surf); border: 1px solid var(--border);
+      color: var(--text2); font-size: 0.7rem; font-weight: 600;
+      cursor: pointer; transition: all 0.18s; font-family: inherit;
+      position: relative;
+    }
+    .src-btn:hover { background: var(--surf2); color: var(--text); border-color: var(--border2); }
+    .src-btn.active { background: rgba(124,127,248,0.1); border-color: rgba(124,127,248,0.3); color: var(--accent); }
+    .src-btn .src-ico { font-size: 1.1rem; }
+    .src-btn .src-cnt {
+      position: absolute; top: 5px; right: 6px;
+      font-size: 0.6rem; font-weight: 800; color: var(--text3);
+    }
+
+    /* "Toutes" button */
+    .all-btn {
+      width: 100%; display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 9px;
+      background: transparent; border: 1px solid transparent;
+      color: var(--text2); font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; font-family: inherit; margin-bottom: 6px;
+    }
+    .all-btn:hover { background: var(--surf); color: var(--text); }
+    .all-btn.active { background: var(--surf2); color: var(--text); border-color: var(--border2); }
+    .all-btn .all-cnt { margin-left: auto; font-size: 0.7rem; color: var(--text3); }
+
+    /* Slider */
+    .slider-wrap { padding: 0 1px; }
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 3px; border-radius: 2px;
+      background: linear-gradient(to right, var(--accent) var(--pct,0%), var(--surf3) var(--pct,0%));
+      outline: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
+      background: var(--text); border: 2.5px solid var(--accent);
+      box-shadow: 0 0 0 0 var(--glow);
+      cursor: pointer; transition: box-shadow 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { box-shadow: 0 0 0 5px var(--glow); }
+    .slider-val { font-size: 0.78rem; font-weight: 800; color: var(--text); margin-top: 9px; }
+
+    /* Commune chips */
+    .commune-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+    .com-chip {
+      padding: 5px 10px; border-radius: 8px;
+      background: var(--surf); border: 1px solid var(--border);
+      font-size: 0.71rem; font-weight: 600; color: var(--text2);
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .com-chip:hover { background: var(--surf2); color: var(--text); }
+    .com-chip.active { background: rgba(124,127,248,0.12); border-color: rgba(124,127,248,0.35); color: var(--accent); }
+
+    /* ═══════════════════════════════════════
+       MAIN
+    ═══════════════════════════════════════ */
+    main { display: flex; flex-direction: column; overflow: hidden; }
+
+    .toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .count-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      background: var(--surf); border: 1px solid var(--border);
+      font-size: 0.72rem;
+    }
+    .count-badge b { font-weight: 800; color: var(--text); }
+    .count-badge span { color: var(--text2); }
+
+    .sort-wrap { margin-left: auto; }
+    .sort-sel {
+      background: var(--surf); border: 1px solid var(--border); color: var(--text);
+      padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-family: inherit;
+      cursor: pointer; outline: none; transition: border-color 0.15s;
+    }
+    .sort-sel:hover { border-color: var(--border2); }
+
+    /* ═══════════════════════════════════════
+       GRID
+    ═══════════════════════════════════════ */
+    .grid-scroller { flex: 1; overflow-y: auto; padding: 16px 18px; }
+    .grid-scroller::-webkit-scrollbar { width: 4px; }
+    .grid-scroller::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 2px; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 13px; }
+
+    /* ═══════════════════════════════════════
+       CARD
+    ═══════════════════════════════════════ */
+    .card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; cursor: pointer;
+      transition: transform 0.25s cubic-bezier(.2,.8,.3,1), box-shadow 0.25s ease, border-color 0.25s;
+      animation: fadeUp 0.35s cubic-bezier(.2,.8,.3,1) both;
+      position: relative;
+    }
+    .card::after {
+      content: ''; position: absolute; inset: 0; border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255,255,255,0.025) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .card:hover {
+      transform: translateY(-4px) scale(1.005);
+      border-color: rgba(124,127,248,0.28);
+      box-shadow: 0 0 0 1px rgba(124,127,248,0.1), 0 24px 56px rgba(0,0,0,0.55), 0 0 60px rgba(124,127,248,0.04);
+    }
+
+    /* Colored top accent per score */
+    .card-accent {
+      height: 2px; width: 100%; transition: opacity 0.25s;
+      opacity: 0.55;
+    }
+    .card:hover .card-accent { opacity: 1; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Photo */
+    .card-photo {
+      position: relative; aspect-ratio: 3/2; overflow: hidden;
+      background: linear-gradient(135deg, #0f0f18, #151520);
+    }
+    .card-photo img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.5s cubic-bezier(.2,.8,.3,1);
+    }
+    .card:hover .card-photo img { transform: scale(1.06); }
+
+    .card-photo-ph {
+      width: 100%; height: 100%; display: flex; align-items: center;
+      justify-content: center; font-size: 3rem;
+      background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(167,139,250,0.06));
+    }
+
+    /* Photo gradient overlay */
+    .card-photo::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(12,12,18,0.85) 0%, rgba(12,12,18,0.2) 45%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Badges */
+    .badges { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; z-index: 2; }
+    .badge-src {
+      padding: 3px 8px; border-radius: 6px;
+      font-size: 0.6rem; font-weight: 900; letter-spacing: 0.08em;
+    }
+    .badge-coeur {
+      padding: 3px 9px; border-radius: 6px;
+      font-size: 0.6rem; font-weight: 900; letter-spacing: 0.05em;
+      background: rgba(244,63,94,0.2); color: #fb7185;
+      border: 1px solid rgba(244,63,94,0.35);
+      animation: heartbeat 1.8s ease infinite;
+    }
+    .badge-new {
+      padding: 3px 9px; border-radius: 6px;
+      font-size: 0.6rem; font-weight: 900; letter-spacing: 0.05em;
+      background: rgba(52,211,153,0.18); color: var(--s-green);
+      border: 1px solid rgba(52,211,153,0.35);
+    }
+    @keyframes heartbeat {
+      0%,100% { transform: scale(1); }
+      14% { transform: scale(1.08); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.05); }
+    }
+
+    /* Score ring — overlaid bottom-right of photo */
+    .score-ring-wrap {
+      position: absolute; bottom: 10px; right: 10px; z-index: 2;
+      width: 44px; height: 44px;
+    }
+    .score-ring { width: 44px; height: 44px; transform: rotate(-90deg); }
+    .ring-track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 3; }
+    .ring-fill { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 0.6s ease; }
+    .ring-center {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 0.62rem; font-weight: 900;
+    }
+
+    /* Card body */
+    .card-body { padding: 13px 15px 15px; }
+
+    .card-price {
+      font-size: 1.5rem; font-weight: 900; letter-spacing: -0.04em;
+      line-height: 1; margin-bottom: 5px; color: var(--text);
+    }
+
+    .card-loc {
+      font-size: 0.75rem; color: var(--text2); margin-bottom: 11px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .loc-city { font-weight: 600; color: var(--text); }
+
+    .card-divider { height: 1px; background: var(--border); margin-bottom: 10px; }
+
+    .card-metas { display: flex; gap: 0; margin-bottom: 10px; }
+    .meta-item {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.75rem; color: var(--text2); flex: 1;
+    }
+    .meta-item b { color: var(--text); font-weight: 700; }
+    .meta-item .ico { font-size: 0.8rem; opacity: 0.8; }
+
+    .card-desc {
+      font-size: 0.74rem; color: var(--text3); line-height: 1.55;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; margin-bottom: 13px; min-height: 2.3em;
+      font-style: italic;
+    }
+
+    .card-cta {
+      display: block; width: 100%; text-align: center; text-decoration: none;
+      padding: 9px; border-radius: 9px;
+      background: var(--surf); border: 1px solid var(--border);
+      color: var(--text2); font-size: 0.76rem; font-weight: 600;
+      transition: all 0.2s; cursor: pointer; font-family: inherit;
+    }
+    .card-cta:hover {
+      background: rgba(124,127,248,0.12); border-color: rgba(124,127,248,0.3);
+      color: var(--accent);
+    }
+
+    /* ═══════════════════════════════════════
+       SKELETON
+    ═══════════════════════════════════════ */
+    .skel {
+      background: linear-gradient(90deg, var(--surf) 25%, var(--surf2) 50%, var(--surf) 75%);
+      background-size: 300% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--radius); height: 340px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ═══════════════════════════════════════
+       EMPTY
+    ═══════════════════════════════════════ */
+    .empty {
+      grid-column: 1/-1; padding: 80px 24px; text-align: center; color: var(--text2);
+    }
+    .empty-ico { font-size: 3.5rem; margin-bottom: 16px; display: block; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    .empty h2 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty p { font-size: 0.82rem; line-height: 1.65; max-width: 340px; margin: 0 auto; }
+
+    /* ═══════════════════════════════════════
+       MODAL
+    ═══════════════════════════════════════ */
+    .overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.82); backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal {
+      background: #0e0e15; border: 1px solid var(--border2);
+      border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh;
+      overflow-y: auto; animation: popIn 0.22s cubic-bezier(.2,.8,.3,1);
+    }
+    .modal::-webkit-scrollbar { width: 3px; }
+    .modal::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 2px; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-photo { aspect-ratio: 16/9; overflow: hidden; border-radius: 20px 20px 0 0; position: relative; }
+    .modal-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .modal-photo-ph {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      font-size: 5rem;
+      background: linear-gradient(135deg, rgba(99,102,241,0.06), rgba(167,139,250,0.06));
+    }
+
+    .modal-body { padding: 24px; }
+
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+    .modal-price { font-size: 2.1rem; font-weight: 900; letter-spacing: -0.05em; }
+    .modal-score-ring { width: 56px; height: 56px; flex-shrink: 0; position: relative; }
+    .modal-score-ring svg { width: 56px; height: 56px; transform: rotate(-90deg); }
+    .modal-score-num {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 0.72rem; font-weight: 900;
+    }
+
+    .modal-title { font-size: 0.85rem; color: var(--text2); margin-bottom: 20px; }
+
+    .modal-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+    .stat-box { background: var(--surf); border-radius: 11px; padding: 13px 14px; }
+    .stat-box.full { grid-column: 1/-1; }
+    .stat-v { font-size: 1.05rem; font-weight: 800; margin-bottom: 3px; }
+    .stat-l { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); }
+
+    .modal-desc { font-size: 0.83rem; color: var(--text2); line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+
+    .modal-footer { display: flex; gap: 8px; }
+    .btn-cta {
+      flex: 1; display: block; text-align: center; text-decoration: none;
+      padding: 13px; border-radius: 11px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 0.88rem; font-weight: 800;
+      box-shadow: 0 4px 20px rgba(124,127,248,0.3);
+      transition: all 0.18s; letter-spacing: -0.01em;
+    }
+    .btn-cta:hover { box-shadow: 0 8px 30px rgba(124,127,248,0.45); transform: translateY(-1px); }
+    .btn-dismiss {
+      padding: 13px 18px; border-radius: 11px;
+      background: var(--surf2); border: 1px solid var(--border2);
+      color: var(--text2); font-size: 0.88rem; font-family: inherit;
+      cursor: pointer; transition: all 0.15s; font-weight: 600;
+    }
+    .btn-dismiss:hover { color: var(--text); background: var(--surf3); }
+
+    /* ═══════════════════════════════════════
+       TOASTS
+    ═══════════════════════════════════════ */
+    .toast-stack {
+      position: fixed; bottom: 20px; right: 20px; z-index: 600;
+      display: flex; flex-direction: column-reverse; gap: 8px; max-width: 310px;
+    }
+    .toast {
+      display: flex; align-items: flex-start; gap: 11px;
+      background: rgba(10,10,16,0.97); backdrop-filter: blur(24px);
+      border: 1px solid rgba(52,211,153,0.2); border-radius: 13px;
+      padding: 12px 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+      animation: toastIn 0.3s cubic-bezier(.2,.8,.3,1);
+    }
+    @keyframes toastIn { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:translateX(0)} }
+    .toast-ico { font-size: 1.4rem; flex-shrink: 0; }
+    .toast-title { font-size: 0.75rem; font-weight: 800; color: var(--s-green); margin-bottom: 3px; }
+    .toast-sub { font-size: 0.7rem; color: var(--text2); }
+
+    /* ═══════════════════════════════════════
+       UTILS
+    ═══════════════════════════════════════ */
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+
+<body x-data="app()" x-init="init()" x-cloak @keydown.escape.window="modal = null">
+
+  <!-- ═══ HEADER ═══ -->
+  <header>
+    <div class="logo">🏠 Veille Immo · 95</div>
+    <div class="header-sep"></div>
+
+    <div class="stat-pills">
+      <div class="pill">
+        <b x-text="stats.total ?? '—'"></b>
+        <span>annonces</span>
+      </div>
+      <template x-if="stats.avg_price">
+        <div class="pill"><b x-text="fmt(stats.avg_price)"></b><span>moy.</span></div>
+      </template>
+      <template x-if="stats.min_price">
+        <div class="pill"><b x-text="fmt(stats.min_price)"></b><span>min.</span></div>
+      </template>
+      <template x-for="[src, n] in Object.entries(stats.sources ?? {})">
+        <div class="pill">
+          <div class="pill-dot" :style="`background:${color(src)}`"></div>
+          <b x-text="n"></b>
+          <span x-text="src"></span>
+        </div>
+      </template>
+    </div>
+
+    <div class="live">
+      <div class="live-ring"></div>
+      <span class="live-txt">En direct</span>
+    </div>
+  </header>
+
+  <!-- ═══ SHELL ═══ -->
+  <div class="shell">
+
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside>
+
+      <!-- Source -->
+      <div>
+        <div class="section-title">Source</div>
+        <button class="all-btn" :class="{active: f.source===''}" @click="f.source=''">
+          Toutes les sources
+          <span class="all-cnt" x-text="listings.length"></span>
+        </button>
+        <div class="src-grid">
+          <template x-for="s in SOURCES" :key="s.id">
+            <button class="src-btn" :class="{active: f.source===s.id}" @click="f.source = f.source===s.id ? '' : s.id">
+              <span class="src-ico" x-text="s.ico"></span>
+              <span x-text="s.label"></span>
+              <span class="src-cnt" x-text="listings.filter(l=>l.source===s.id).length"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div>
+        <div class="section-title">Score minimum</div>
+        <div class="slider-wrap">
+          <input type="range" min="0" max="100" step="5" x-model="f.score"
+            :style="`--pct:${f.score}%`">
+          <div class="slider-val" x-text="`${f.score} / 100`"
+            :style="`color:${scolor(+f.score)}`"></div>
+        </div>
+      </div>
+
+      <!-- Budget -->
+      <div>
+        <div class="section-title">Budget maximum</div>
+        <div class="slider-wrap">
+          <input type="range" min="200000" max="470000" step="5000" x-model="f.budget"
+            :style="`--pct:${(f.budget-200000)/2700}%`">
+          <div class="slider-val" x-text="fmt(+f.budget)"></div>
+        </div>
+      </div>
+
+      <!-- Communes -->
+      <div>
+        <div class="section-title">Commune</div>
+        <div class="commune-chips">
+          <button class="com-chip" :class="{active: f.commune===''}" @click="f.commune=''">Toutes</button>
+          <template x-for="c in stats.top_communes ?? []" :key="c.name">
+            <button class="com-chip" :class="{active: f.commune===c.name}"
+              @click="f.commune = f.commune===c.name ? '' : c.name"
+              x-text="c.name"></button>
+          </template>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <main>
+      <div class="toolbar">
+        <div class="count-badge">
+          <b x-text="sorted.length"></b>
+          <span>annonce(s)</span>
+        </div>
+        <div class="sort-wrap">
+          <select class="sort-sel" x-model="sortBy">
+            <option value="score">Par score</option>
+            <option value="price_asc">Prix ↑</option>
+            <option value="price_desc">Prix ↓</option>
+            <option value="date">Plus récentes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-scroller">
+        <div class="grid">
+
+          <!-- Skeletons -->
+          <template x-if="loading">
+            <template x-for="i in 9" :key="i">
+              <div class="skel" :style="`animation-delay:${i*.06}s`"></div>
+            </template>
+          </template>
+
+          <!-- Empty -->
+          <template x-if="!loading && sorted.length===0">
+            <div class="empty">
+              <span class="empty-ico">🔍</span>
+              <h2>Aucune annonce pour ces critères</h2>
+              <p>Le scanner tourne toutes les 20 minutes. Les nouvelles annonces apparaissent automatiquement en temps réel.</p>
+            </div>
+          </template>
+
+          <!-- Cards -->
+          <template x-for="(l, i) in sorted" :key="l.id">
+            <div class="card" @click="modal = l" :style="`animation-delay:${Math.min(i,12)*.04}s`">
+
+              <!-- Colored top accent -->
+              <div class="card-accent" :style="`background: ${scolor(l.score)}`"></div>
+
+              <!-- Photo -->
+              <div class="card-photo">
+                <template x-if="l.photos && l.photos[0]">
+                  <img :src="l.photos[0]" :alt="l.title" loading="lazy">
+                </template>
+                <template x-if="!l.photos || !l.photos[0]">
+                  <div class="card-photo-ph">🏡</div>
+                </template>
+
+                <!-- Badges -->
+                <div class="badges">
+                  <span class="badge-src"
+                    :style="`background:${color(l.source)}1a; color:${color(l.source)}; border:1px solid ${color(l.source)}44`"
+                    x-text="l.source.toUpperCase()">
+                  </span>
+                  <template x-if="l.score >= 90">
+                    <span class="badge-coeur">COUP DE CŒUR</span>
+                  </template>
+                  <template x-if="l.score < 90 && isNew(l)">
+                    <span class="badge-new">NOUVEAU</span>
+                  </template>
+                </div>
+
+                <!-- Score ring -->
+                <div class="score-ring-wrap">
+                  <svg viewBox="0 0 36 36" class="score-ring">
+                    <circle class="ring-track" cx="18" cy="18" r="15.9"/>
+                    <circle class="ring-fill" cx="18" cy="18" r="15.9"
+                      :stroke="scolor(l.score)"
+                      :stroke-dasharray="`${l.score} 100`"
+                      transform="rotate(-90 18 18)"/>
+                  </svg>
+                  <div class="ring-center" :style="`color:${scolor(l.score)}`" x-text="l.score"></div>
+                </div>
+              </div>
+
+              <!-- Body -->
+              <div class="card-body">
+                <div class="card-price" x-text="fmt(l.price)"></div>
+                <div class="card-loc">
+                  📍 <span class="loc-city" x-text="l.commune"></span>
+                  <template x-if="l.code_postal">
+                    <span x-text="'· ' + l.code_postal"></span>
+                  </template>
+                </div>
+
+                <div class="card-divider"></div>
+
+                <div class="card-metas">
+                  <template x-if="l.surface">
+                    <div class="meta-item">
+                      <span class="ico">🏠</span>
+                      <b x-text="l.surface + ' m²'"></b>
+                    </div>
+                  </template>
+                  <template x-if="l.chambres">
+                    <div class="meta-item">
+                      <span class="ico">🛏</span>
+                      <b x-text="l.chambres + ' ch.'"></b>
+                    </div>
+                  </template>
+                  <template x-if="l.prix_m2">
+                    <div class="meta-item">
+                      <span class="ico">📐</span>
+                      <b x-text="fmtm2(l.prix_m2)"></b>
+                    </div>
+                  </template>
+                </div>
+
+                <p class="card-desc" x-text="l.description || 'Aucune description disponible.'"></p>
+
+                <a :href="l.url" target="_blank" class="card-cta" @click.stop>
+                  Voir l'annonce →
+                </a>
+              </div>
+
+            </div>
+          </template>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══ MODAL ═══ -->
+  <template x-if="modal">
+    <div class="overlay" @click.self="modal = null">
+      <div class="modal">
+
+        <div class="modal-photo">
+          <template x-if="modal.photos && modal.photos[0]">
+            <img :src="modal.photos[0]" :alt="modal.title">
+          </template>
+          <template x-if="!modal.photos || !modal.photos[0]">
+            <div class="modal-photo-ph">🏡</div>
+          </template>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-header">
+            <div>
+              <div class="modal-price" x-text="fmt(modal.price)"></div>
+            </div>
+            <div class="modal-score-ring">
+              <svg viewBox="0 0 36 36">
+                <circle class="ring-track" cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3"/>
+                <circle class="ring-fill" cx="18" cy="18" r="15.9" fill="none" stroke-width="3" stroke-linecap="round"
+                  :stroke="scolor(modal.score)"
+                  :stroke-dasharray="`${modal.score} 100`"
+                  transform="rotate(-90 18 18)"/>
+              </svg>
+              <div class="modal-score-num" :style="`color:${scolor(modal.score)}`" x-text="modal.score"></div>
+            </div>
+          </div>
+          <div class="modal-title" x-text="modal.title"></div>
+
+          <div class="modal-stats">
+            <div class="stat-box">
+              <div class="stat-v" x-text="modal.surface ? modal.surface + ' m²' : '—'"></div>
+              <div class="stat-l">Surface</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-v" x-text="modal.chambres ? modal.chambres + ' ch.' : '—'"></div>
+              <div class="stat-l">Chambres</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-v" x-text="modal.prix_m2 ? fmtm2(modal.prix_m2) : '—'"></div>
+              <div class="stat-l">Prix au m²</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-v" x-text="modal.created_at ? ago(modal.created_at) : '—'"></div>
+              <div class="stat-l">Publié</div>
+            </div>
+            <div class="stat-box full">
+              <div class="stat-v">
+                📍 <span x-text="modal.commune"></span>
+                <template x-if="modal.code_postal">
+                  <span style="font-weight:400;color:var(--text2)" x-text="'(' + modal.code_postal + ')'"></span>
+                </template>
+              </div>
+              <div class="stat-l" x-text="modal.source.toUpperCase()"></div>
+            </div>
+          </div>
+
+          <p class="modal-desc" x-text="modal.description || 'Pas de description disponible.'"></p>
+
+          <div class="modal-footer">
+            <a :href="modal.url" target="_blank" class="btn-cta">
+              Voir sur <span x-text="modal.source.toUpperCase()"></span> →
+            </a>
+            <button class="btn-dismiss" @click="modal = null">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ═══ TOASTS ═══ -->
+  <div class="toast-stack">
+    <template x-for="t in toasts" :key="t.id">
+      <div class="toast">
+        <span class="toast-ico">🏡</span>
+        <div>
+          <div class="toast-title">Nouvelle annonce · Score <span x-text="t.score"></span></div>
+          <div class="toast-sub" x-text="fmt(t.price) + ' — ' + t.commune"></div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- ═══ SCRIPT ═══ -->
+  <script>
+    const SRC_COLORS = { pap:'#c084fc', bienici:'#fb923c', leboncoin:'#f87171', seloger:'#38bdf8' };
+    const SOURCES = [
+      { id:'pap',       label:'PAP',       ico:'🟣' },
+      { id:'bienici',   label:'BienIci',   ico:'🟠' },
+      { id:'leboncoin', label:'LeBonCoin', ico:'🔴' },
+      { id:'seloger',   label:'SeLoger',   ico:'🔵' },
+    ];
+
+    function app() {
+      return {
+        listings: [], stats: {}, loading: true,
+        modal: null, toasts: [], sortBy: 'score',
+        f: { source:'', commune:'', score: 0, budget: 470000 },
+        SOURCES,
+
+        async init() {
+          await Promise.all([this.loadStats(), this.loadListings()]);
+          this.connectSSE();
+        },
+
+        async loadListings() {
+          try {
+            const r = await fetch('/api/listings?limit=200');
+            this.listings = (await r.json()).listings;
+          } catch(e){ console.error(e); }
+          finally { this.loading = false; }
+        },
+
+        async loadStats() {
+          try {
+            const r = await fetch('/api/stats');
+            this.stats = await r.json();
+          } catch(e){}
+        },
+
+        connectSSE() {
+          const es = new EventSource('/api/events');
+          es.onmessage = (e) => {
+            const d = JSON.parse(e.data);
+            if (d.ping) return;
+            if (!this.listings.find(l => l.id === d.id)) {
+              this.listings.unshift(d);
+              this.stats.total = (this.stats.total || 0) + 1;
+              this.addToast(d);
+            }
+          };
+        },
+
+        addToast(l) {
+          const id = Date.now();
+          this.toasts.push({ id, ...l });
+          setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 5500);
+        },
+
+        get filtered() {
+          return this.listings.filter(l => {
+            if (this.f.source && l.source !== this.f.source) return false;
+            if (this.f.commune && !l.commune?.toLowerCase().includes(this.f.commune.toLowerCase())) return false;
+            if (l.score < +this.f.score) return false;
+            if (l.price > +this.f.budget) return false;
+            return true;
+          });
+        },
+
+        get sorted() {
+          const a = [...this.filtered];
+          if (this.sortBy === 'price_asc')  return a.sort((x,y) => x.price - y.price);
+          if (this.sortBy === 'price_desc') return a.sort((x,y) => y.price - x.price);
+          if (this.sortBy === 'date')       return a.sort((x,y) => new Date(y.created_at) - new Date(x.created_at));
+          return a.sort((x,y) => y.score - x.score);
+        },
+
+        fmt(n) {
+          if (!n && n !== 0) return '—';
+          return new Intl.NumberFormat('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(n);
+        },
+
+        fmtm2(n) {
+          if (!n) return '—';
+          return new Intl.NumberFormat('fr-FR', { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(n) + '/m²';
+        },
+
+        color(src) { return SRC_COLORS[src] || '#64748b'; },
+
+        scolor(s) {
+          if (s >= 90) return '#34d399';
+          if (s >= 70) return '#7c7ff8';
+          if (s >= 50) return '#fbbf24';
+          return '#475569';
+        },
+
+        isNew(l) {
+          if (!l.created_at) return false;
+          return Date.now() - new Date(l.created_at).getTime() < 2 * 3600 * 1000;
+        },
+
+        ago(iso) {
+          const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+          if (m < 1) return 'À l\'instant';
+          if (m < 60) return `Il y a ${m} min`;
+          const h = Math.floor(m / 60);
+          if (h < 24) return `Il y a ${h}h`;
+          return `Il y a ${Math.floor(h/24)}j`;
+        },
+      };
+    }
+  </script>
+</body>
+</html>
