@@ -2,7 +2,7 @@
 
 > Surveillance automatique du marché immobilier — alertes instantanées par Telegram et email, dashboard en temps réel.
 
-Scrape **PAP**, **BienIci**, **LeBonCoin** et **SeLoger** toutes les 20 minutes. Chaque nouvelle annonce est scorée, dédupliquée, et envoyée avant que tu aies eu le temps d'ouvrir ton navigateur.
+Scrape **PAP.fr** toutes les 20 minutes. Chaque nouvelle annonce est scorée, dédupliquée, et envoyée avant que tu aies eu le temps d'ouvrir ton navigateur.
 
 ---
 
@@ -12,7 +12,7 @@ Scrape **PAP**, **BienIci**, **LeBonCoin** et **SeLoger** toutes les 20 minutes.
 
 | Fonctionnalité | Détail |
 |---|---|
-| **Sources** | PAP · BienIci · LeBonCoin · SeLoger |
+| **Sources** | PAP ✅ · BienIci ⚠️ · LeBonCoin ⚠️ · SeLoger ⚠️ |
 | **Type** | Maison uniquement |
 | **Scan** | Toutes les 20 minutes |
 | **Alertes** | Telegram (instantané) + Email (Gmail) |
@@ -232,6 +232,19 @@ source .venv/bin/activate && python seed.py
 ```
 
 Injecte des annonces fictives avec de vraies photos pour vérifier que l'interface fonctionne.
+
+---
+
+## État des scrapers
+
+| Source | Statut | Raison |
+|---|---|---|
+| **PAP.fr** | ✅ Fonctionnel | HTML server-side, geo IDs accessibles |
+| **BienIci** | ⚠️ Désactivé | API géo ignorée sans authentification OAuth |
+| **LeBonCoin** | ⚠️ Désactivé | Bot detection headless irréparable sans proxy résidentiel |
+| **SeLoger** | ⚠️ Désactivé | Page vide en mode headless (bot detection) |
+
+Pour débloquer les 3 sources ⚠️ : proxy résidentiel rotatif ou token OAuth de l'app mobile.
 
 ---
 
